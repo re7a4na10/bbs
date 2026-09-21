@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<ahtml xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layout/layout">
+    <head>
+        <title layout:fragment="title">投稿一覧</title>
+    </head>
+    <main layout:fragment="content">
+        <h2>新規投稿</h2>
+        <a th:href="@{/posts/new}" class="btn btn-primary mb-3">新規投稿</a>
+
+        <!-- 検索フォーム -->
+         <form th:action="@{/posts}" method="get" class="mb-3">
+            <div class="row">
+                <!-- 検索キーワード -->
+                <div class="col-md-4">
+                    <input type="text" name="keyword" class="form-control" placeholder="検索" th:value="${param.keyword}" required>
+                </div>
+                <!--- マッチタイプ -->
+                <div class="col-md-2">
+                    <select name="matchType" class="form-control">
+                        <option value="contains" th:selected="${param.matchType?.toString()=='contains'}">部分一致</option>
+                        <option value="startsWith" th:selected="${param.matchType?.toString()=='startsWith'}">前方一致</option>
+                        <option value="endsWith" th:selected="${param.matchType?.toString()=='endsWith'}">後方一致</option>
+                    </select>
+                </div>
+                <!-- ソート基準 -->
+                <div class="col-md-2">
+                    <select name="sortBy" class="form-control">
+                        <option value="createdAt" th:selected="${param.sortBy?.toString()=='createdAt'}">作成日</option>
+                        <option value="title" th:selected="${param.sortBy?.toString()=='title'}">タイトル</option>
+                    </select>
+                </div>
+                <!-- 並び順 -->
+                <div class="col-md-2">
+                    <select name="sortOrder" class="form-control">
+                        <option value="asc" th:selected="${param.sortBy?.toString()=='asc'}">昇順</option>
+                        <option value="desc" th:selected="${param.sortBy?.toString()=='desc'}">降順</option>
+                    </select>
+                </div> 
+
+                <!-- 検索ボタン -->
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary">検索</button>
+                </div>
+            </div>
+         </form>
+
+        <h1>投稿一覧</h1>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th scope="col" style="width: 30%;">タイトル</th>
+                    <th scope="col" style="width: 50%;">内容</th>
+                    <th scope="col" style="width: 20%;" class="text-end">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="post : ${posts}">
+                    <td>
+                        <a th:href="@{/posts/{id}(id=${post.id})}" th:text="${post.title}"></a>
+                    </td>
+                    <td>
+                        <span th:text="${post.content}"></span>
+                    </td>
+                    <td class="text-end">
+                        <div th:if="${post.user != null and loggedInUserId == post.user.id}">
+                            <a th:href="@{/posts/{id}/edit(id=${post.id})}" class="btn btn-primary btn-sm">編集</a>
+                            <form th:action="@{/posts/{id}/delete(id=${post.id})}" method="post" style="display: inline;">
+                                <input type="hidden" name="_method" value="delete">
+                                <button type="submit" class="btn btn-danger btn-sm">削除</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ページネーション -->
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <!-- 前のページ -->
+                <li th:class="${posts.number == 0} ? 'page-item disabled' : 'page-item'">
+                    <a class="page-link" th:href="@{/posts(page=${posts.number - 1}, keyword=${param.keyword}, matchType=${param.matchType}, sortBy=${param.sortBy}, sortOrder=${param.sortOrder})}">Previous</a>
+                </li>
+                <!-- ページ番号 -->
+                <li th:each="i : ${#numbers.sequence(0, posts.totalPages - 1)}" th:class="${posts.number == i} ? 'page-item active' : 'page-item'">
+                    <a class="page-link" th:href="@{/posts(page=${i}, keyword=${param.keyword}, matchType=${param.matchType}, sortBy=${param.sortBy}, sortOrder=${param.sortOrder})}" th:text="${i + 1}"></a>
+                </li>
+                <!-- 次のページ -->
+                <li th:class="${posts.number + 1 >= posts.totalPages} ? 'page-item disabled' : 'page-item'">
+                    <a class="page-link" th:href="@{/posts(page=${posts.number + 1}, keyword=${param.keyword}, matchType=${param.matchType}, sortBy=${param.sortBy}, sortOrder=${param.sortOrder})}">Next</a>
+                </li>
+            </ul>
+        </nav>
+
+    </main>
+</html>

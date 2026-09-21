@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="layout/layout">
+    <head>
+        <title layout:fragment="title">新規投稿</title>
+    </head>
+    <main layout:fragment="content">
+        <h1>新規投稿</h1>
+        <form th:action="@{/posts}" method="post">
+            <div class="mb-3">
+                <label for="title" class="form-label">タイトル</label>
+                <input type="text" id="title" name="title" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="content" class="form-label">内容</label>
+                <textarea id="content" name="content" class="form-control" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">投稿</button>
+        </form>
+    </main>
+</html>
