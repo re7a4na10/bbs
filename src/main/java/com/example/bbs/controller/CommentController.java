@@ -25,7 +25,7 @@ public class CommentController {
      * @param postService
      * @param userService
      */
-    public  CommentController(CommentService commentService, PostService postService, UserService userService) {
+    public CommentController(CommentService commentService, PostService postService, UserService userService) {
         this.commentService = commentService;
         this.postService = postService;
         this.userService = userService;
@@ -42,13 +42,13 @@ public class CommentController {
         // 投稿が存在するか確認
         Post post = postService.findById(postId).orElseThrow(() -> new IllegalArgumentException("Invalid post Id:" + postId));
         // 現在ログインしているユーザーを取得
-        User user = userService.getCurrentUser();
+        User loggedInUser = userService.getCurrentUser();
 
         Comment comment = new Comment();
         // コメントに投稿、内容、ユーザーを設定
         comment.setPost(post);
         comment.setContent(content);
-        comment.setUser(user);
+        comment.setUser(loggedInUser);
         commentService.save(comment);
         return "redirect:/posts/" + postId;
     }

@@ -4,6 +4,7 @@ import com.example.bbs.model.Post;
 import com.example.bbs.model.User;
 import com.example.bbs.service.PostService;
 import com.example.bbs.service.UserService;
+import com.example.bbs.service.LikeService;
 import com.example.bbs.service.CommentService;
 
 import org.springframework.data.domain.Page;
@@ -18,17 +19,25 @@ public class PostController {
     private final PostService postService;
     private final UserService userService;
     private final CommentService commentService;
+    private final LikeService likeService;
 
     /**
      * コンストラクタ
      * @param postService
      * @param userService
      * @param commentService
+     * @param likeService
      */
-    public PostController(PostService postService, UserService userService, CommentService commentService) {
+    public PostController(
+        PostService postService, 
+        UserService userService, 
+        CommentService commentService, 
+        LikeService likeService) {
+        
         this.postService = postService;
         this.userService = userService;
         this.commentService = commentService;
+        this.likeService = likeService;
     }
 
     /**
@@ -79,14 +88,24 @@ public class PostController {
     @GetMapping("/{id}")
     public String viewPost(@PathVariable Long id, Model model) {
 
-                // 現在ログインしているユーザーを取得
+        // 現在ログインしているユーザーを取得
         User loggedInUser = userService.getCurrentUser();
 
+        // 投稿情報をモデルに渡す
         Post post = postService.findById(id).orElseThrow(() -> new IllegalArgumentException("Invalid post Id:" + id));
+        
+        // ログインユーザがこの投稿にいいねしているかどうか判定
+        boolean isLiked = likeService.isLikedByUser(post, loggedInUser);
+
+        // この投稿のいいねの数を取得
+        int likeCount = likeService.countLikesForPost(post);
+
         model.addAttribute("post", post);
         model.addAttribute("comments", commentService.findByPostId(id));
         model.addAttribute("loggedInUserId", loggedInUser.getId());
-        
+        model.addAttribute("isLiked", isLiked);
+        model.addAttribute("likeCount", likeCount);
+
         return "posts/detail";
     }
 

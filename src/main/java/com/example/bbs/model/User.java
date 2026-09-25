@@ -2,6 +2,7 @@ package com.example.bbs.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -30,4 +31,7 @@ public class User {
 
     @OneToMany (mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments = new ArrayList<>();
+
+    @OneToMany (mappedBy = "user")
+    private Set<Like> likes;
 }
