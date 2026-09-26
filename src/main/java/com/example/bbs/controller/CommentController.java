@@ -74,5 +74,4 @@ public class CommentController {
         commentService.deleteById(id);
         return "redirect:/posts/" + postId;
     }
-    
 }

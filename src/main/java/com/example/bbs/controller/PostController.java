@@ -66,7 +66,7 @@ public class PostController {
         // サイズを固定（例：3件ずつ表示）
         int size = 3;
 
-        // 検索フォールの入力値
+        // 検索フォームの入力値
         Page<Post> posts;
         if (keyword != null && !keyword.isEmpty() && matchType != null && !matchType.isEmpty()){
             posts = postService.searchPosts(keyword, matchType, sortBy, sortOrder, page, size);

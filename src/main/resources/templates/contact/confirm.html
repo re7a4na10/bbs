@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html layout:decorate="layout/layout">
+<head>
+    <title layout:fragment="title">お問い合わせ確認画面</title>
+</head>
+<main layout:fragment="content">
+    <h1 class="mb-4">お問い合わせ確認画面</h1>
+    <form th:action="@{/contact/submit}" method="post">
+        <div class="mb-3">
+            <label for="name" class="form-label">お名前</label>
+            <p th:text="${contactData.name}" class="form-control-plaintext"></p>
+            <input type="hidden" name="name" th:value="${contactData.name}">
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">メールアドレス</label>
+            <p th:text="${contactData.email}" class="form-control-plaintext"></p>
+            <input type="hidden" name="email" th:value="${contactData.email}">
+        </div>
+        <div class="mb-3">
+            <label for="message" class="form-label">お問い合わせ内容</label>
+            <p th:text="${contactData.message}" class="form-control-plaintext"></p>
+            <input type="hidden" name="message" th:value="${contactData.message}">
+        </div>
+        <button type="submit" class="btn btn-primary">送信する</button>
+        <a th:href="@{/contact}" class="btn btn-secondary">戻る</a>
+    </form>
+</main>
+</html>

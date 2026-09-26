@@ -24,7 +24,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/","/auth/register", "/auth/login").permitAll() // /registerと/loginは認証不要
+                .requestMatchers("/","/auth/register", "/auth/login", "/contact/**").permitAll() // /registerと/loginは認証不要
                 .anyRequest().authenticated() // その他のリクエストは認証が必要
             )
             .formLogin(form -> form

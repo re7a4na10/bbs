@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html layout:decorate="layout/layout">
+<head>
+    <title layout:fragment="title">お問い合わせフォーム</title>
+</head>
+<main layout:fragment="content">
+    <h1 class="mb-4">お問い合わせフォーム</h1>
+    <form th:if="${isMailEnabled}" th:action="@{/contact/confirm}" method="post">
+        <div class="mb-3">
+            <label for="name" class="form-label">お名前</label>
+            <input type="text" id="name" name="name" class="form-control" placeholder="例： 山田 太郎" th:value="${contactData.name}" required>
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">メールアドレス</label>
+            <input type="text" id="email" name="email" class="form-control" placeholder="例： example@gmail.com" th:value="${contactData.email}" required>
+        </div>
+        <div class="mb-3">
+            <label for="message" class="form-label">お問い合わせ内容</label>
+            <textarea id="message" name="message" class="form-control" rows="5" placeholder="お問い合わせ内容をご記入ください" th:text="${contactData.message}" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">確認画面へ進む</button>
+    </form>
+
+    <!-- メール無効時にお知らせを表示 -->
+    <div th:unless="${isMailEnabled}" class="notice">
+        メール送信機能は無効になっています。
+    </div>
+</main>
+</html>
