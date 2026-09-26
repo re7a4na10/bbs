@@ -22,6 +22,7 @@ public class Post {
     private Long id;
 
     private String title;
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     @Column(name = "created_at", nullable = false, updatable = false)

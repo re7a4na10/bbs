@@ -7,14 +7,16 @@
     </head>
     <main layout:fragment="content">
         <h1>新規投稿</h1>
-        <form th:action="@{/posts}" method="post">
+        <form th:action="@{/posts}" method="post" th:object="${post}">
             <div class="mb-3">
                 <label for="title" class="form-label">タイトル</label>
-                <input type="text" id="title" name="title" class="form-control" required>
+                <input type="text" id="title" name="title" class="form-control" required th:field="*{title}">
+                <div th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="text-danger"></div>
             </div>
             <div class="mb-3">
                 <label for="content" class="form-label">内容</label>
-                <textarea id="content" name="content" class="form-control" rows="5" required></textarea>
+                <textarea id="content" name="content" class="form-control" rows="5" required th:field="*{content}"></textarea>
+                <div th:if="${#fields.hasErrors('content')}" th:errors="*{content}" class="text-danger"></div>
             </div>
             <button type="submit" class="btn btn-success">投稿</button>
         </form>

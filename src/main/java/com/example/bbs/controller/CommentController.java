@@ -1,13 +1,17 @@
 package com.example.bbs.controller;
 
+import com.example.bbs.dto.CommentForm;
 import com.example.bbs.model.Comment;
 import com.example.bbs.model.Post;
 import com.example.bbs.model.User;
 import com.example.bbs.service.CommentService;
 import com.example.bbs.service.PostService;
 import com.example.bbs.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * コメントコントローラー
@@ -34,11 +38,26 @@ public class CommentController {
     /**
      * コメントを追加する
      * @param postId
-     * @param content
+     * @param commentForm
+     * @param result
+     * @param ra
      * @return
      */
     @PostMapping("/add")
-    public String addComment(@RequestParam Long postId, @RequestParam String content) {
+    public String addComment(
+        @RequestParam Long postId, 
+        @Valid @ModelAttribute("commentForm") CommentForm commentForm, 
+        BindingResult result, 
+        RedirectAttributes ra) {
+    
+        // バリデーションエラーがある場合、エラー情報を含めたフォーム画面へ戻す
+        if (result.hasErrors()) {
+            // バリデーションエラーがあればリダイレクト先にエラー情報を渡す
+            ra.addFlashAttribute("org.springframework.validation.BindingResult.commentForm", result);
+            ra.addFlashAttribute("commentForm", commentForm);
+            return "redirect:/posts/" + postId;
+        }
+    
         // 投稿が存在するか確認
         Post post = postService.findById(postId).orElseThrow(() -> new IllegalArgumentException("Invalid post Id:" + postId));
         // 現在ログインしているユーザーを取得
@@ -47,7 +66,7 @@ public class CommentController {
         Comment comment = new Comment();
         // コメントに投稿、内容、ユーザーを設定
         comment.setPost(post);
-        comment.setContent(content);
+        comment.setContent(commentForm.getContent());
         comment.setUser(loggedInUser);
         commentService.save(comment);
         return "redirect:/posts/" + postId;

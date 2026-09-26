@@ -1,15 +1,21 @@
 package com.example.bbs.controller;
 
+import com.example.bbs.dto.CommentForm;
+import com.example.bbs.dto.PostForm;
 import com.example.bbs.model.Post;
 import com.example.bbs.model.User;
 import com.example.bbs.service.PostService;
 import com.example.bbs.service.UserService;
+
+import jakarta.validation.Valid;
+
 import com.example.bbs.service.LikeService;
 import com.example.bbs.service.CommentService;
 
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 @Controller
@@ -100,6 +106,11 @@ public class PostController {
         // この投稿のいいねの数を取得
         int likeCount = likeService.countLikesForPost(post);
 
+        // コメントフォームを追加
+        if (!model.containsAttribute("commentForm")) {
+            model.addAttribute("commentForm", new CommentForm());
+        }
+
         model.addAttribute("post", post);
         model.addAttribute("comments", commentService.findByPostId(id));
         model.addAttribute("loggedInUserId", loggedInUser.getId());
@@ -122,14 +133,30 @@ public class PostController {
 
     /**
      * 投稿の保存
-     * @param post
+     * @param postForm
+     * @param result
+     * @param model
      * @return
      */
     @PostMapping
-    public String createPost(@ModelAttribute Post post) {
+    public String createPost(
+        @Valid @ModelAttribute("post") PostForm postForm, 
+        BindingResult result, 
+        Model model) {
         
+        // バリデーションエラーがある場合、エラー情報を含めたフォーム画面へ戻す
+        if (result.hasErrors()) {
+            model.addAttribute("post", postForm);
+            return "posts/new";
+        }
+
         // 現在ログインしているユーザーを取得
         User loggedInUser = userService.getCurrentUser();
+        
+        // バリデーションが通ったら、DTOの内容をエンティティに変換
+        Post post = new Post();
+        post.setTitle(postForm.getTitle());
+        post.setContent(postForm.getContent());
         post.setUser(loggedInUser);
 
         postService.save(post);
