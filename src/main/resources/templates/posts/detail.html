@@ -16,13 +16,12 @@
             </form>
         </span>
         <!-- いいねボタン -->
-        <form th:action="@{/posts/{id}/like(id=${post.id})}" method="post" style="display: inline;">
-            <button type="submit" th:class="${isLiked ? 'btn btn-danger': 'btn btn-outline-danger'}">
-                <i th:class="${isLiked ? 'bi bi-heart-fill': 'bi bi-heart'}"></i>
-            </button>
-        </form>
+        <button id="like-button" th:class="${isLiked ? 'btn btn-danger': 'btn btn-outline-danger'}" th:data-post-id="${post.id}">
+            <i id="like-icon" th:class="${isLiked ? 'bi bi-heart-fill': 'bi bi-heart'}"></i>
+        </button>
+
         <!-- いいいねの数 -->
-        <span th:text="${likeCount}"></span> 件のいいね
+        <span id="like-count" th:text="${likeCount}"></span> 件のいいね
 
         <h2 class="mt-3">コメント</h2>
         <!-- コメント一覧 -->
@@ -60,5 +59,58 @@
             </div>
             <button type="submit" class="btn btn-success">コメント追加</button>
         </form>
+
+        <script>
+            document.addEventListener("DOMContentLoaded", function(){
+                // 要素を取得
+                const likeButton = document.getElementById("like-button");
+                const likeIcon = document.getElementById("like-icon");
+                const likeCount = document.getElementById("like-count");
+
+                // CSRFトークンの取得
+                const csrfToken = document.querySelector("meta[name='_csrf']").getAttribute("content");
+                const csrfHeader = document.querySelector("meta[name='_csrf_header']").getAttribute("content");
+
+                // いいねボタンがクリックされた場合
+                likeButton.addEventListener("click", function(){
+                    // post-idを取得
+                    const postId = likeButton.getAttribute("data-post-id");
+
+                    fetch(`/posts/${postId}/like`, {
+                        method: "POST",
+                        headers: {
+                            "content-type": "application/json",
+                            [csrfHeader]: csrfToken
+                        },
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                            return;
+                        }
+
+                        // いいね状態の更新
+                        if (data.isLiked) {
+                            // いいねボタンを押下していない状態から押下した状態にする
+                            likeButton.classList.remove("btn-outline-danger");
+                            likeIcon.classList.remove("bi-heart");
+                            likeButton.classList.add("btn-danger");
+                            likeIcon.classList.add("bi-heart-fill");
+                        } else {
+                            // いいねボタンを押下した状態から押下していない状態にする
+                            likeButton.classList.remove("btn-danger");
+                            likeIcon.classList.remove("bi-heart-fill");
+                            likeButton.classList.add("btn-outline-danger");
+                            likeIcon.classList.add("bi-heart");
+                        }
+
+                        // いいね数の更新
+                        likeCount.textContent = data.likeCount;
+                    })
+                    .catch(error => console.error("ERROR:", error));
+                });
+            });
+        </script>
     </main> 
 </html>
