@@ -17,6 +17,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/posts")
@@ -61,7 +62,7 @@ public class PostController {
         @RequestParam(value="keyword", required = false) String keyword, 
         @RequestParam(value="matchType", required = false, defaultValue = "contains") String matchType, 
         @RequestParam(value="sortBy", required = false, defaultValue = "createdAt") String sortBy, 
-        @RequestParam(value="sortOrder", required = false, defaultValue = "asc") String sortOrder, 
+        @RequestParam(value="sortOrder", required = false, defaultValue = "desc") String sortOrder, 
         @RequestParam(value="page", required = false, defaultValue = "0") int page, 
         Model model) {
 
@@ -135,6 +136,7 @@ public class PostController {
      * 投稿の保存
      * @param postForm
      * @param result
+     * @param redirectAttributes
      * @param model
      * @return
      */
@@ -142,10 +144,12 @@ public class PostController {
     public String createPost(
         @Valid @ModelAttribute("post") PostForm postForm, 
         BindingResult result, 
+        RedirectAttributes redirectAttributes,
         Model model) {
         
         // バリデーションエラーがある場合、エラー情報を含めたフォーム画面へ戻す
         if (result.hasErrors()) {
+            model.addAttribute("errorMessage", "掲示板の投稿に失敗しました。");
             model.addAttribute("post", postForm);
             return "posts/new";
         }
@@ -158,6 +162,9 @@ public class PostController {
         post.setTitle(postForm.getTitle());
         post.setContent(postForm.getContent());
         post.setUser(loggedInUser);
+
+        // フラッシュメッセージをセット
+        redirectAttributes.addFlashAttribute("successMessage", "掲示板の投稿に成功しました。");
 
         postService.save(post);
         return "redirect:/posts";
@@ -190,11 +197,26 @@ public class PostController {
     /**
      * 投稿の更新
      * @param id
-     * @param post
+     * @param postForm
+     * @param result
+     * @param redirectAttributes
+     * @param model
      * @return
      */
     @PostMapping("/{id}")
-    public String updatePost(@PathVariable Long id, @ModelAttribute Post post) {
+    public String updatePost(
+        @PathVariable Long id, 
+        @Valid @ModelAttribute("post") PostForm postForm,
+        BindingResult result, 
+        RedirectAttributes redirectAttributes,
+        Model model) {
+
+        // バリデーションエラーがある場合、エラー情報を含めたフォーム画面へ戻す
+        if (result.hasErrors()) {
+            postForm.setId(id);
+            model.addAttribute("errorMessage", "掲示板の更新に失敗しました。");
+            return "posts/edit";
+        }
 
         // ログインユーザを取得
         User loggedInUser = userService.getCurrentUser();
@@ -204,24 +226,32 @@ public class PostController {
         
         // 投稿の所有者を確認
         if (!postService.verifyOwnership(existingPost, loggedInUser)) {
+            // フラッシュメッセージをセット
+            redirectAttributes.addFlashAttribute("errorMessage", "掲示板の更新に失敗しました。");
+
             // 所有者でない場合はエラーをスローまたはリダイレクト
             return "redirect:/posts?error=notAuthorized";
         }
 
         // 投稿を更新
-        post.setId(id);
-        post.setUser(loggedInUser);
-        postService.save(post);
+        existingPost.setTitle(postForm.getTitle());
+        existingPost.setContent(postForm.getContent());
+        postService.save(existingPost);
+
+        // フラッシュメッセージをセット
+        redirectAttributes.addFlashAttribute("successMessage", "掲示板の更新に成功しました。");
+
         return "redirect:/posts";
     }
 
     /**
      * 投稿の削除
      * @param id
+     * @param redirectAttributes
      * @return
      */
     @PostMapping("/{id}/delete")
-    public String deletePost(@PathVariable Long id) {
+    public String deletePost(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         // ログインユーザを取得
         User loggedInUser = userService.getCurrentUser();
 
@@ -230,11 +260,18 @@ public class PostController {
         
         // 投稿の所有者を確認
         if (!postService.verifyOwnership(post, loggedInUser)) {
+            // フラッシュメッセージをセット
+            redirectAttributes.addFlashAttribute("errorMessage", "掲示板の削除に失敗しました。");
+
             // 所有者でない場合はエラーをスローまたはリダイレクト
             return "redirect:/posts?error=notAuthorized";
         }
         // 投稿を削除
         postService.deleteById(id);
+
+        // フラッシュメッセージをセット
+        redirectAttributes.addFlashAttribute("successMessage", "掲示板の削除に成功しました。");
+
         return "redirect:/posts";
     }
 } 

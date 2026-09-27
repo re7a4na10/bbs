@@ -8,14 +8,16 @@
 
     <main layout:fragment="content">
         <h1>投稿編集</h1>
-        <form th:action="@{/posts/{id}(id=${post.id})}" method="post">
+        <form th:action="@{/posts/{id}(id=${post.id})}" method="post" th:object="${post}">
             <div class="mb-3">
                 <label for="title" class="form-label">タイトル</label>
-                <input type="text" id="title" name="title" class="form-control" th:value="${post.title}" required>
+                <input type="text" id="title" name="title" class="form-control" required th:field="*{title}">
+                <div th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="text-danger"></div>
             </div>
             <div class="mb-3">
                 <label for="content" class="form-label">内容</label>
-                <textarea id="content" name="content" class="form-control" rows="5" th:text="${post.content}" required></textarea>
+                <textarea id="content" name="content" class="form-control" rows="5" required th:field="*{content}"></textarea>
+                <div th:if="${#fields.hasErrors('content')}" th:errors="*{content}" class="text-danger"></div>
             </div>
             <button type="submit" class="btn btn-success">更新</button>
             <a th:href="@{/posts/{id}(id=${post.id})}" class="btn btn-secondary">戻る</a>

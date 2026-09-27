@@ -23,6 +23,7 @@ public class CommentController {
     private final CommentService commentService;
     private final PostService postService;
     private final UserService userService;
+
     /**
      * コンストラクタ
      * @param commentService
@@ -48,13 +49,17 @@ public class CommentController {
         @RequestParam Long postId, 
         @Valid @ModelAttribute("commentForm") CommentForm commentForm, 
         BindingResult result, 
-        RedirectAttributes ra) {
+        RedirectAttributes redirectAttributes) {
     
         // バリデーションエラーがある場合、エラー情報を含めたフォーム画面へ戻す
         if (result.hasErrors()) {
             // バリデーションエラーがあればリダイレクト先にエラー情報を渡す
-            ra.addFlashAttribute("org.springframework.validation.BindingResult.commentForm", result);
-            ra.addFlashAttribute("commentForm", commentForm);
+            redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.commentForm", result);
+            redirectAttributes.addFlashAttribute("commentForm", commentForm);
+
+            // フラッシュメッセージをセット
+            redirectAttributes.addFlashAttribute("errorMessage", "コメントの投稿に失敗しました。");
+
             return "redirect:/posts/" + postId;
         }
     
@@ -69,16 +74,22 @@ public class CommentController {
         comment.setContent(commentForm.getContent());
         comment.setUser(loggedInUser);
         commentService.save(comment);
+
+        // フラッシュメッセージをセット
+        redirectAttributes.addFlashAttribute("successMessage", "コメントの投稿に成功しました。");
+
         return "redirect:/posts/" + postId;
     }
 
     /**
      * コメントを削除する
      * @param id
+     * @param postId
+     * @param redirectAttributes
      * @return
      */
     @PostMapping("/{id}/delete")
-    public String deleteComment(@PathVariable Long id, @RequestParam Long postId) {
+    public String deleteComment(@PathVariable Long id, @RequestParam Long postId, RedirectAttributes redirectAttributes) {
         // ログインユーザを取得
         User loggedInUser = userService.getCurrentUser();
         // コメントが存在するか確認
@@ -86,11 +97,20 @@ public class CommentController {
 
         // 投稿の所有者を確認
         if (!commentService.verifyOwnership(comment, loggedInUser)) {
+
+            // フラッシュメッセージをセット
+            redirectAttributes.addFlashAttribute("errorMessage", "コメントの削除に失敗しました。");
+
             // 所有者でない場合はエラーをスローまたはリダイレクト
             return "redirect:/posts/" + postId + "?error=notAuthorized";
         }
 
+        // コメントを削除
         commentService.deleteById(id);
+
+        // フラッシュメッセージをセット
+        redirectAttributes.addFlashAttribute("successMessage", "コメントの削除に成功しました。");
+
         return "redirect:/posts/" + postId;
     }
 }

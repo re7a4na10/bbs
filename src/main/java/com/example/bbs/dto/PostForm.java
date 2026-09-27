@@ -8,6 +8,8 @@ import lombok.Setter;
 @Getter
 @Setter 
 public class PostForm {
+    private Long id;
+
     @NotBlank(message = "{error.post.title.blank}")
     @Size(max = 100, message = "{error.post.title.size}")
     private String title;
