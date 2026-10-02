@@ -12,10 +12,10 @@ import org.springframework.stereotype.Service;
 public class EmailService {
     private JavaMailSender mailSender;
 
-    @Value("${mail.from}")
+    @Value("${mail.from:}")
     private String fromAddress;
 
-    @Value("${mail.admin}")
+    @Value("${mail.admin:}")
     private String adminAddress;
 
     /**
