@@ -32,5 +32,8 @@ build/
 ### VS Code ###
 .vscode/
 
+### OCI SSH keys ###
+/OCI-SSH/
+
 ### ローカル設定（コミットしない） ###
 application-local.properties
