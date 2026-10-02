@@ -7,7 +7,7 @@ Spring Boot を用いた Web アプリケーション開発の学習用に作成
 
 | 分類 | 技術 |
 | --- | --- |
-| 言語 | Java 26 |
+| 言語 | Java 25 |
 | フレームワーク | Spring Boot 4.1.1 |
 | 認証 | Spring Security（フォームログイン / BCrypt / CSRF 対策） |
 | O/R マッパー | Spring Data JPA (Hibernate) |
@@ -121,7 +121,7 @@ erDiagram
 
 ### 必要な環境
 
-- JDK 26
+- JDK 25
 - MySQL 8.0 以降
 - （メール送信を使う場合）Gmail アカウントとアプリパスワード
 
@@ -129,6 +129,10 @@ erDiagram
 
 ```sql
 CREATE DATABASE board CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+-- アプリ用ユーザー（root は使わない）
+CREATE USER 'appuser'@'localhost' IDENTIFIED BY 'appuser';
+GRANT ALL PRIVILEGES ON board.* TO 'appuser'@'localhost';
 ```
 
 テーブルは `spring.jpa.hibernate.ddl-auto=update` により起動時に自動生成されます。
@@ -163,8 +167,9 @@ mail.admin=（運営者の受信アドレス）
 | `DB_USER` | MySQL のユーザー名 | なし（必須） |
 | `DB_PASSWORD` | MySQL のパスワード | なし（必須） |
 
-> **注意**：`EmailService` は `mail.from` / `mail.admin` を必須で読み込むため、方法Bの場合も
-> この2つをプロパティか環境変数（`MAIL_FROM` / `MAIL_ADMIN`）で指定しないと起動に失敗します。
+> **補足**：メール送信を使う場合（`app.mail.enabled=true`）は、`mail.from` / `mail.admin` を
+> プロパティか環境変数（`MAIL_FROM` / `MAIL_ADMIN`）で指定してください。
+> メール送信を使わない場合（`app.mail.enabled=false`）は省略できます。
 
 ### 3. アプリケーションを起動する
 
@@ -177,7 +182,7 @@ mail.admin=（運営者の受信アドレス）
 方法B（環境変数で起動）：
 
 ```powershell
-$env:DB_USER="root"; $env:DB_PASSWORD="password"
+$env:DB_USER="appuser"; $env:DB_PASSWORD="appuser"
 ./mvnw spring-boot:run
 ```
 
